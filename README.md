@@ -3,7 +3,7 @@ Is a telegram bot based on the original ItsAGramLive
 
 The ideia is to create a bot version so that you can go live in your instagram WITHOUT the need of a python installation.
 
-
+- insert your token given by BotFather in bot.py and run THAT script
 - bot.py is a copy of ItsAGramLive.py and has been modified with pyTelegramBotAPI
 - It does log you in, and it does make you go live
 - Stop works but not the "save to IGTV" yet
