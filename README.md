@@ -9,7 +9,7 @@ The ideia is to create a bot version so that you can go live in your instagram W
 - Stop works but not the "save to IGTV" yet
 - Info, viewrs and comments works too
 
->HELP is VERY much appreciated
+>## HELP is VERY much appreciated
 
  <img src="https://user-images.githubusercontent.com/67715164/173175592-3f9ba36e-4f1b-4c8c-8cfc-bdd7461adcf6.png" width="240" height="426">
 
