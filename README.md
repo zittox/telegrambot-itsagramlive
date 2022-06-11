@@ -7,7 +7,7 @@ The ideia is to create a bot version so that you can go live in your instagram W
 - bot.py is a copy of ItsAGramLive.py and has been modified with pyTelegramBotAPI
 - It does log you in, and it does make you go live
 - Stop works but not the "save to IGTV" yet
-- Info, viewrs and comments works too
+- Info, viewers and comments works too
 
 >## HELP is VERY much appreciated
 
