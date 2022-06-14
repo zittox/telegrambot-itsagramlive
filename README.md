@@ -5,7 +5,7 @@
 ### The ideia is to create a bot version so that you can go live in your instagram ( OBSStudio / Wirecast / VMix alike ) WITHOUT the need of a python installation.
 
 #
->bot.py is a copy of ItsAGramLive.py and has been modified with pyTelegramBotAPI
+> #### bot.py is a copy of ItsAGramLive.py and has been modified with pyTelegramBotAPI
 #
 ___**WORKS:**
 - login (if the account has no two-factor authentication) 
@@ -56,7 +56,7 @@ ___**TO DO:**
 [ GNU GPLv3 ](https://choosealicense.com/licenses/gpl-3.0/)
 
 -------------------------------------
->###This project was made possible by the original scrip from [HarryPython](https://github.com/harrypython/itsagramlive)
+> ### This project was made possible by the original scrip from [HarryPython](https://github.com/harrypython/itsagramlive)
 
 
 
