@@ -61,7 +61,7 @@ token = 'blablbalablabalabalbaalabalbbla'
 [ GNU GPLv3 ](https://choosealicense.com/licenses/gpl-3.0/)
 
 -------------------------------------
- ### This project was made possible by the original scrip from [HarryPython](https://github.com/harrypython/itsagramlive)
+ ### This project was made possible by the original script from [HarryPython](https://github.com/harrypython/itsagramlive)
 
 
 
