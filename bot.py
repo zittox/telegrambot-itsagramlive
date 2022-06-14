@@ -9,11 +9,78 @@ import uuid
 import tempfile
 import pyperclip
 import requests
+import telebot
+from telebot import types
+from telebot.types import KeyboardButton, ReplyKeyboardMarkup
 # Turn off InsecureRequestWarning
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from PIL import Image
+from dotenv import load_dotenv
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
+load_dotenv()
+token = os.getenv('token')
+
+
+blive = telebot.TeleBot(token)
+
+b1 = KeyboardButton('info')
+b2 = KeyboardButton('viewers')
+b3 = KeyboardButton('mute comments')
+b4 = KeyboardButton('unmute comments')
+b5 = KeyboardButton('comments')
+b6 = KeyboardButton('pin')
+b7 = KeyboardButton('unpin')
+b8 = KeyboardButton('chat')
+b9 = KeyboardButton('wave')
+b10 = KeyboardButton('stop')
+k1 = ReplyKeyboardMarkup(resize_keyboard=True)
+k1.row(b1, b2, b5)
+k1.row(b3, b4, b8)
+k1.row(b6, b7, b9)
+k1.row(b10)
+k2 = types.ForceReply(selective=False)
+
+
+class User:
+    descr: str = None
+    titl: str = None
+    chat_id = None
+    passw = None
+    name = None
+    deviceid = None
+
+
+@blive.message_handler(commands=['start', 'help'])
+def send_welcome(menss):
+    blive.reply_to(menss, "ItsaGramLiveBot creates a rtmp server and stream key"
+                            " so you can go live on instagram using sofwares like OBSStudio, Wirecast and VMix.\n\n"
+                            " /goBot to start the bot.\n\n"
+                   )
+
+
+@blive.message_handler(commands=['goBot'])
+def name1(menss):
+    name = blive.reply_to(menss, "Please enter your username")
+    blive.register_next_step_handler(name, passwx)
+
+
+def passwx(menss):
+    name = menss.text
+    User.name = name
+    User.chat_id = menss.chat.id
+    passw = blive.reply_to(menss, "Please enter your password")
+    User.passw = passw
+    blive.register_next_step_handler(passw, process)
+
+
+def process(menss):
+    passw = menss.text
+    User.passw = passw
+    blive.send_message(menss.chat.id, "Just a moment...")
+    live = ItsAGramLive(username=User.name, password=User.passw)
+    live.start()
 
 
 class ItsAGramLive:
@@ -75,6 +142,7 @@ class ItsAGramLive:
         m = hashlib.md5()
         m.update(username.encode('utf-8') + password.encode('utf-8'))
         self.device_id = self.generate_device_id(m.hexdigest())
+        User.deviceid = self.device_id
 
         self.set_user(username=username, password=password)
 
@@ -142,7 +210,7 @@ class ItsAGramLive:
                 if self.send_request('accounts/login/', post=self.generate_signature(json.dumps(data)), login=True):
                     if "error_type" in self.LastJson:
                         if self.LastJson['error_type'] == 'bad_password':
-                            print(self.LastJson['message'])
+                            blive.send_message(User.chat_id, self.LastJson['message'])
                             return False
 
                     if "two_factor_required" not in self.LastJson:
@@ -163,27 +231,31 @@ class ItsAGramLive:
 
     def two_factor(self):
         # verification_method': 0 works for sms and TOTP. why? ¯\_ಠ_ಠ_/¯
-        verification_code = input('Enter verification code: ')
-        data = {
-            'verification_method': 0,
-            'verification_code': verification_code,
-            'trust_this_device': 0,
-            'two_factor_identifier': self.LastJson['two_factor_info']['two_factor_identifier'],
-            '_csrftoken': self.LastResponse.cookies['csrftoken'],
-            'username': self.username,
-            'device_id': self.device_id,
-            'guid': self.uuid,
-        }
-        if self.send_request('accounts/two_factor_login/', self.generate_signature(json.dumps(data)), login=True):
-            return True
-        else:
-            return False
+        verification_code = blive.send_message(User.chat_id, 'Enter verification code: ', reply_markup=k2)
+        blive.register_next_step_handler(verification_code, tf)
+
+    #def tf(self, menss):
+    #    menss = int(menss.text)
+    #    data = {
+    #        'verification_method': 0,
+    #        'verification_code': menss,
+    #        'trust_this_device': 0,
+    #        'two_factor_identifier': self.LastJson['two_factor_info']['two_factor_identifier'],
+    #        '_csrftoken': self.LastResponse.cookies['csrftoken'],
+    #        'username': self.username,
+    #        'device_id': self.device_id,
+    #        'guid': self.uuid,
+    #    }
+    #    if self.send_request('accounts/two_factor_login/', self.generate_signature(json.dumps(data)), login=True):
+    #        return True
+    #    else:
+    #        return False
 
     def send_request(self, endpoint, post=None, login=False, headers: dict = {}):
         verify = False  # don't show request warning
 
         if not self.isLoggedIn and not login:
-            raise Exception("Not logged in!\n")
+            blive.send_message(User.chat_id, "Not logged in!\n")
 
         h = self.basic_headers
         h.update(headers)
@@ -201,7 +273,7 @@ class ItsAGramLive:
 
                 break
             except Exception as e:
-                print('* Except on SendRequest (wait 60 sec and resend): {}'.format(str(e)))
+                blive.send_message(User.chat_id, '* Except on SendRequest (wait 60 sec and resend): {}'.format(str(e)))
                 time.sleep(60)
 
         if self.LastResponse.status_code == 200:
@@ -209,9 +281,10 @@ class ItsAGramLive:
         elif 'two_factor_required' in self.LastJson and self.LastResponse.status_code == 400:
             # even the status code isn't 200 return True if the 2FA is required
             if self.LastJson['two_factor_required']:
-                print("Two factor required")
+                blive.send_message(User.chat_id, "Two factor required")
                 return True
-        elif 'message' in self.LastJson and self.LastResponse.status_code == 400 and self.LastJson['message'] == 'challenge_required':
+        elif 'message' in self.LastJson and self.LastResponse.status_code == 400 and self.LastJson[
+            'message'] == 'challenge_required':
             path = self.LastJson['challenge']['api_path'][1:]
             choice = int(input('Choose a challenge mode (0 - SMS, 1 - Email): '))
             self.get_code_challenge_required(path, choice)
@@ -222,8 +295,8 @@ class ItsAGramLive:
             error_message = " - "
             if "message" in self.LastJson:
                 error_message = self.LastJson['message']
-            print('* ERROR({}): {}'.format(self.LastResponse.status_code, error_message))
-            print(self.LastResponse)
+            blive.send_message(User.chat_id, '* ERROR({}): {}'.format(self.LastResponse.status_code, error_message))
+            blive.send_message(User.chat_id, str(self.LastResponse))
             return False
 
     def set_proxy(self, proxy=None):
@@ -243,100 +316,99 @@ class ItsAGramLive:
             self.IG_SIG_KEY.encode('utf-8'), data.encode('utf-8'), hashlib.sha256).hexdigest() + '.' + parsed_data
 
     def start(self):
-        print("Let's do it!")
+        blive.send_message(User.chat_id, "Let's do it!")
         if not self.login():
-            print("Error {}".format(self.LastResponse.status_code))
-            print(json.loads(self.LastResponse.text).get("message"))
+            blive.send_message(User.chat_id, "Error {}".format(self.LastResponse.status_code))
+            blive.send_message(User.chat_id, json.loads(self.LastResponse.text).get("message"))
         else:
-            print("You'r logged in")
+            blive.send_message(User.chat_id, "You'r logged in")
 
             if self.create_broadcast():
-                print("Broadcast ID: {}")
-                print("* Broadcast ID: {}".format(self.broadcast_id))
-                print("* Server URL: {}".format(self.stream_server))
-                print("* Server Key: {}".format(self.stream_key))
+                # blive.send_message(User.chat_id, "Broadcast ID: {}")
+                blive.send_message(User.chat_id, " Broadcast ID: {}".format(self.broadcast_id))
+                blive.send_message(User.chat_id, " Server URL: {}".format(self.stream_server))
+                blive.send_message(User.chat_id, " Server Key: {}".format(self.stream_key))
 
                 try:
                     pyperclip.copy(self.stream_key)
-                    print("The stream key was automatically copied to your clipboard")
+                    blive.send_message(User.chat_id, "The stream key was automatically copied to your clipboard")
                 except pyperclip.PyperclipException as headless_error:
-                    print("Could not find a copy/paste mechanism for your system")
+                    blive.send_message(User.chat_id, "Could not find a copy/paste mechanism for your system")
                     pass
 
-                print("Press Enter after your setting your streaming software.")
+                blive.send_message(User.chat_id, "Setup and start your streaming software.\n\t")
+                blive.send_message(User.chat_id, "Now you can choose the commands below.\n\t", reply_markup=k1)
 
                 if self.start_broadcast():
                     self.is_running = True
 
-                    while self.is_running:
-                        cmd = input('command> ')
+                    @blive.message_handler()
+                    def command(menss):
+                        while self.is_running:
 
-                        if cmd == "stop":
-                            self.stop()
+                            if menss.text == "stop":
+                                self.stop()
+                                break
 
-                        elif cmd == "mute comments":
-                            self.mute_comments()
+                            elif menss.text == "mute comments":
+                                self.mute_comments()
+                                break
 
-                        elif cmd == "unmute comments":
-                            self.unmute_comment()
+                            elif menss.text == "unmute comments":
+                                self.unmute_comment()
+                                break
 
-                        elif cmd == 'info':
-                            self.live_info()
+                            elif menss.text == 'info':
+                                self.live_info()
+                                break
 
-                        elif cmd == 'viewers':
-                            users, ids = self.get_viewer_list()
-                            print(users)
+                            elif menss.text == 'viewers':
+                                users, ids = self.get_viewer_list()
+                                blive.send_message(User.chat_id, str(users))
+                                break
 
-                        elif cmd == 'comments':
-                            self.get_comments()
+                            elif menss.text == 'comments':
+                                self.get_comments()
+                                break
 
-                        elif cmd[:3] == 'pin':
-                            to_send = cmd[4:]
-                            if to_send:
-                                self.pin_comment(to_send)
-                            else:
-                                print('usage: chat <text to chat>')
+                            elif menss.text == 'pin':
+                                # elif cmd[:3] == 'pin':
+                                to_send = menss.text[4:]
+                                if to_send:
+                                    self.pin_comment(to_send)
+                                else:
+                                    blive.send_message(User.chat_id, 'usage: chat <text to chat>')
 
-                        elif cmd[:5] == 'unpin':
-                            self.unpin_comment()
+                            elif menss.text == 'unpin':
+                                # elif cmd[:5] == 'unpin':
+                                self.unpin_comment()
 
-                        elif cmd[:4] == 'chat':
-                            to_send = cmd[5:]
-                            if to_send:
-                                self.send_comment(to_send)
-                            else:
-                                print('usage: chat <text to chat>')
+                            elif menss.text == 'chat':
+                                # elif cmd[:4] == 'chat':
+                                to_send = blive.send_message(menss.chat.id, "write the comment you want to send",
+                                                             reply_markup=k2)
+                                blive.register_next_step_handler(to_send, self.send_comment)
+                                break
 
-                        elif cmd == 'wave':
-                            users, ids = self.get_viewer_list()
-                            for i in range(len(users)):
-                                print(f'{i + 1}. {users[i]}')
-                            print('Type number according to user e.g 1.')
-                            while True:
-                                cmd = input('number> ')
-
-                                if cmd == 'back':
-                                    break
-                                try:
-                                    user_id = int(cmd) - 1
-                                    self.wave(ids[user_id])
-                                    break
-                                except:
-                                    print('Please type number e.g 1')
+                            elif menss.text == 'wave':
+                                users, ids = self.get_viewer_list()
+                                for i in range(len(users)):
+                                    blive.send_message(User.chat_id, f'{i + 1}. {users[i]}')
+                                cmd = blive.send_message(User.chat_id, 'Type number according to user e.g 1', reply_markup=k2)
+                                while True:
+                                    if cmd.text == 'back':
+                                        break
+                                    else:
+                                        try:
+                                            user_id = int(cmd.text) - 1
+                                            blive.register_next_step_handler(ids[user_id], self.wave)
+                                            #self.wave(ids[user_id])
+                                            break
+                                        except:
+                                            blive.send_message(User.chat_id, 'Please type number e.g 1')
 
                         else:
-                            print(
-                                'Available commands:\n\t '
-                                '"stop"\n\t '
-                                '"mute comments"\n\t '
-                                '"unmute comments"\n\t '
-                                '"info"\n\t '
-                                '"viewers"\n\t '
-                                '"comments"\n\t '
-                                '"chat"\n\t '
-                                '"pin"\n\t '
-                                '"unpin"\n\t '
-                                '"wave"\n\t')
+                            blive.send_message(User.chat_id, "loop")
 
     def get_viewer_list(self):
         if self.send_request("live/{}/get_viewer_list/".format(self.broadcast_id)):
@@ -359,18 +431,17 @@ class ItsAGramLive:
     def live_info(self):
         if self.send_request("live/{}/info/".format(self.broadcast_id)):
             viewer_count = self.LastJson['viewer_count']
-
-            print("[*]Broadcast ID: {}".format(self.broadcast_id))
-            print("[*]Server URL: {}".format(self.stream_server))
-            print("[*]Stream Key: {}".format(self.stream_key))
-            print("[*]Viewer Count: {}".format(viewer_count))
-            print("[*]Status: {}".format(self.LastJson['broadcast_status']))
+            blive.send_message(User.chat_id, "[*]Broadcast ID: {}".format(self.broadcast_id))
+            blive.send_message(User.chat_id, "[*]Server URL: {}".format(self.stream_server))
+            blive.send_message(User.chat_id, "[*]Stream Key: {}".format(self.stream_key))
+            blive.send_message(User.chat_id, "[*]Viewer Count: {}".format(viewer_count))
+            blive.send_message(User.chat_id, "[*]Status: {}".format(self.LastJson['broadcast_status']))
 
     def mute_comments(self):
         data = json.dumps({'_uuid': self.uuid, '_uid': self.username_id, '_csrftoken': self.token})
         if self.send_request(endpoint='live/{}/mute_comment/'.format(self.broadcast_id),
                              post=self.generate_signature(data)):
-            print("Comments muted")
+            blive.send_message(User.chat_id, "Comments muted")
             return True
 
         return False
@@ -379,23 +450,24 @@ class ItsAGramLive:
         data = json.dumps({'_uuid': self.uuid, '_uid': self.username_id, '_csrftoken': self.token})
         if self.send_request(endpoint='live/{}/unmute_comment/'.format(self.broadcast_id),
                              post=self.generate_signature(data)):
-            print("Comments un-muted")
+            blive.send_message(User.chat_id, "Comments un-muted")
             return True
 
         return False
 
-    def send_comment(self, msg):
+    def send_comment(self, menss):
         data = json.dumps({
             'idempotence_token': self.generate_UUID(True),
-            'comment_text': msg,
+            'comment_text': menss.text,
             'live_or_vod': 1,
             'offset_to_video_start': 0
         })
-
+        blive.send_message(menss.chat.id, "comment sent", reply_markup=k1)
         if self.send_request("live/{}/comment/".format(self.broadcast_id), post=self.generate_signature(data)):
             if self.LastJson['status'] == 'ok':
                 return True
         return False
+
 
     def create_broadcast(self):
         data = json.dumps({'_uuid': self.uuid,
@@ -458,7 +530,7 @@ class ItsAGramLive:
             "retry_context": '{"num_step_auto_retry":0,"num_reupload":0,"num_step_manual_retry":0}',
             "media_type": "1",
             "broadcast_id": self.broadcast_id,
-            "is_post_live_igtv":"1",
+            "is_post_live_igtv": "1",
             "xsharing_user_ids": "[]",
             "upload_id": upload_id,
             "image_compression": json.dumps(
@@ -541,30 +613,31 @@ class ItsAGramLive:
             }
 
             if self.send_request(endpoint='media/configure_to_igtv/', post=self.generate_signature(data), headers=h):
-                print('Live Posted to Story!')
+                blive.send_message(User.chat_id, 'Live Posted to Story!')
                 return True
         return False
 
     def stop(self):
-        print('Save Live replay to IGTV ? <y/n>')
-        save = input('command> ')
+        save = blive.send_message(User.chat_id, 'Save Live replay to IGTV ? <y/n>', reply_markup=k2)
+
         if save == 'y':
-            title = input("Title: ")
-            description = input("Description: ")
+            blive.register_next_step_handler(save, dsave)
+            title = blive.send_message(User.chat_id, "Title: ")
+            description = blive.send_message(User.chat_id, "Description: ")
             self.add_post_live_to_igtv(description, title)
 
-        print('Exiting...')
+        blive.send_message(User.chat_id, 'Exiting...')
         self.end_broadcast()
         self.is_running = False
-        print('Bye bye')
+        blive.send_message(User.chat_id, 'Bye bye')
 
     def get_comments(self):
         if self.send_request("live/{}/get_comment/".format(self.broadcast_id)):
             if 'comments' in self.LastJson:
                 for comment in self.LastJson['comments']:
-                    print(f"{comment['user']['username']} has posted a new comment: {comment['text']}")
+                    blive.send_message(User.chat_id, f"{comment['user']['username']} > {comment['text']}")
             else:
-                print("There is no comments.")
+                blive.send_message(User.chat_id, "There is no comments.")
 
     def pin_comment(self, to_send):
         if self.send_comment(msg=to_send):
@@ -581,7 +654,7 @@ class ItsAGramLive:
                     })
                 if self.send_request(endpoint='live/{}/pin_comment/'.format(self.broadcast_id),
                                      post=self.generate_signature(data)):
-                    print('Comment pinned!')
+                    blive.send_message(User.chat_id, 'Comment pinned!')
                     return True
 
         return False
@@ -595,6 +668,45 @@ class ItsAGramLive:
         })
         if self.send_request(endpoint='live/{}/unpin_comment/'.format(self.broadcast_id),
                              post=self.generate_signature(data)):
-            print('Comment unpinned!')
+            blive.send_message(User.chat_id, 'Comment unpinned!')
             return True
         return False
+
+
+def tf(menss):
+    menss = int(menss.text)
+    data = {
+        'verification_method': 0,
+        'verification_code': menss,
+        'trust_this_device': 0,
+        'two_factor_identifier': ItsAGramLive.LastJson['two_factor_info']['two_factor_identifier'],
+        '_csrftoken': ItsAGramLive.LastResponse.cookies['csrftoken'],
+        'username': ItsAGramLive.username,
+        'device_id': User.deviceid,
+        'guid': ItsAGramLive.uuid,
+    }
+    if ItsAGramLive.send_request('accounts/two_factor_login/', ItsAGramLive.generate_signature(json.dumps(data)), login=True):
+        return True
+    else:
+        return False
+
+
+
+#def dsave(menss):
+#    titlex = blive.send_message(menss.chat_id, "Title: ")
+#    blive.register_next_step_handler(titlex, dsave)
+#
+#
+#def title(menss):
+#    titley = menss.text
+#    User.titl = titley
+#    description = blive.send_message(User.chat_id, "Description: ")
+#    blive.register_next_step_handler(description, descri)
+#
+#
+#def descri(menss):
+#    description = menss.text
+#    User.descript = description
+#
+
+blive.polling()
