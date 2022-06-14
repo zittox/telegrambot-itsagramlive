@@ -27,11 +27,15 @@ ___**TO DO:**
 - "save to IGTV"
 ###
 ### Token setup
-
 - Install dotenv
-> pip install python-dotenv
+```bash
+pip install python-dotenv
+```
+
+
 - Create a file .env, in the root directory, paste your token given by @BotFather in TELEGRAM as follows:
-> token = 'blablbalablabalabalbaalabalbbla'
+####
+token = 'blablbalablabalabalbaalabalbbla'
 
 ###
 
@@ -56,7 +60,7 @@ ___**TO DO:**
 [ GNU GPLv3 ](https://choosealicense.com/licenses/gpl-3.0/)
 
 -------------------------------------
-> ### This project was made possible by the original scrip from [HarryPython](https://github.com/harrypython/itsagramlive)
+ ### This project was made possible by the original scrip from [HarryPython](https://github.com/harrypython/itsagramlive)
 
 
 
