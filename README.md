@@ -5,7 +5,7 @@
 ### The ideia is to create a bot version so that you can go live in your instagram ( OBSStudio / Wirecast / VMix alike ) WITHOUT the need of a python installation.
 
 #
-> #### bot.py is a copy of ItsAGramLive.py and has been modified with pyTelegramBotAPI
+#### bot.py is a copy of ItsAGramLive.py and has been modified with pyTelegramBotAPI
 #
 ___**WORKS:**
 - login (if the account has no two-factor authentication) 
@@ -25,7 +25,8 @@ ___**TO DO:**
 - unpin
 - wave
 - "save to IGTV"
-###
+-------------------------------------
+
 ### Token setup
 - Install dotenv
 ```bash
@@ -37,8 +38,8 @@ pip install python-dotenv
 ####
 token = 'blablbalablabalabalbaalabalbbla'
 
-###
 
+-------------------------------------
 
 ### at the moment the bot is
 - OFFLINE
