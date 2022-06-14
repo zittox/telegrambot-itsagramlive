@@ -1,8 +1,8 @@
 
 # ItsaGramLiveBot
-###It's a telegram bot based on the original ItsAGramLive
+### It's a telegram bot based on the original ItsAGramLive
 
-###The ideia is to create a bot version so that you can go live in your instagram ( OBSStudio / Wirecast / VMix alike ) WITHOUT the need of a python installation.
+### The ideia is to create a bot version so that you can go live in your instagram ( OBSStudio / Wirecast / VMix alike ) WITHOUT the need of a python installation.
 
 #
 bot.py is a copy of ItsAGramLive.py and has been modified with pyTelegramBotAPI - insert your token given by BotFather in bot.py and run THAT script
@@ -27,7 +27,7 @@ ___**TO DO:**
 - OFFLINE
   
 ##
-###Contributions are much appreciated
+### Contributions are much appreciated
 
 ##
 

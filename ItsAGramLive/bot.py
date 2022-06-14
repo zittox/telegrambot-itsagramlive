@@ -18,7 +18,7 @@ from PIL import Image
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
-token = '5358967441:AAGLfNnN7Rvn0AAqsIDTW8vcRjm2mQMd-h4'
+token = 'your token'
 
 blive = telebot.TeleBot(token)
 
@@ -669,21 +669,21 @@ class ItsAGramLive:
 
 
 
-def dsave(menss):
-    titlex = blive.send_message(menss.chat_id, "Title: ")
-    blive.register_next_step_handler(titlex, dsave)
-
-
-def title(menss):
-    titley = menss.text
-    User.titl = titley
-    description = blive.send_message(User.chat_id, "Description: ")
-    blive.register_next_step_handler(description, descri)
-
-
-def descri(menss):
-    description = menss.text
-    User.descript = description
-
+#def dsave(menss):
+#    titlex = blive.send_message(menss.chat_id, "Title: ")
+#    blive.register_next_step_handler(titlex, dsave)
+#
+#
+#def title(menss):
+#    titley = menss.text
+#    User.titl = titley
+#    description = blive.send_message(User.chat_id, "Description: ")
+#    blive.register_next_step_handler(description, descri)
+#
+#
+#def descri(menss):
+#    description = menss.text
+#    User.descript = description
+#
 
 blive.polling()
