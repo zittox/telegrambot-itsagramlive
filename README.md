@@ -1,30 +1,47 @@
-# InstaLiveBot
-Is a telegram bot based on the original ItsAGramLive
 
-The ideia is to create a bot version so that you can go live in your instagram WITHOUT the need of a python installation.
+# ItsaGramLiveBot
+###It's a telegram bot based on the original ItsAGramLive
 
-- insert your token given by BotFather in bot.py and run THAT script
-- bot.py is a copy of ItsAGramLive.py and has been modified with pyTelegramBotAPI
-- it does log you in, and it does make you go live
-- stop works but not the "save to IGTV" yet
-- info, viewers and comments works too
+###The ideia is to create a bot version so that you can go live in your instagram ( OBSStudio / Wirecast / VMix alike ) WITHOUT the need of a python installation.
 
-## at the moment the bot is
+#
+bot.py is a copy of ItsAGramLive.py and has been modified with pyTelegramBotAPI - insert your token given by BotFather in bot.py and run THAT script
+#
+___**WORKS:**
+- login, go live, rtmp server link and stream key
+- Info
+- viewers
+- comments
+- mute comments
+- unmute comments
+- chat
+- stop 
+
+___**TO DO:** 
+- pin
+- unpin
+- wave
+- "save to IGTV"
+###
+### at the moment the bot is
 - OFFLINE
+  
+##
+###Contributions are much appreciated
 
->## HELP is VERY much appreciated
+##
 
  <img src="https://user-images.githubusercontent.com/67715164/173175592-3f9ba36e-4f1b-4c8c-8cfc-bdd7461adcf6.png" width="240" height="426">
 
+###
+>PLS READ the README from the original project bellow
 
->Original README bellow
-
-
+###
 
 -------------------------------------
 
 
-
+#
 
 
 ![GitHub](https://img.shields.io/github/license/harrypython/itsagramlive)
