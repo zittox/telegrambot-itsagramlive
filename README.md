@@ -8,7 +8,7 @@
 #### bot.py is a copy of ItsAGramLive.py and has been modified with pyTelegramBotAPI
 #
 ___**WORKS:**
-- login (if the account has no two-factor authentication) 
+- login (if the account has NO two-factor authentication) 
 - go live, rtmp server link and stream key
 - Info
 - viewers
@@ -16,15 +16,15 @@ ___**WORKS:**
 - mute comments
 - unmute comments
 - chat
+- pin
+- unpin
 - stop 
 
 ___**TO DO:**
 - two-factor authentication
 - chalenge mode ( SMS / Email )
-- pin
-- unpin
 - wave
-- "save to IGTV"
+- save to IGTV
 -------------------------------------
 
 ### Token setup
@@ -61,9 +61,12 @@ token = 'blablbalablabalabalbaalabalbbla'
 [ GNU GPLv3 ](https://choosealicense.com/licenses/gpl-3.0/)
 
 -------------------------------------
- ### This project was made possible by the original script from [HarryPython](https://github.com/harrypython/itsagramlive)
+ ## This project was made possible by the original script from [HarryPython](https://github.com/harrypython/itsagramlive)
 
+#
+## Disclaimer
 
+Neither this bot or its creator are associated or affiliated to Instagram. This is an unofficial application and stands no liability or warranty of usage. Use at your own risk.
 
 
 

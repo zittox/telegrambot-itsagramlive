@@ -67,17 +67,14 @@ def name1(menss):
 
 
 def passwx(menss):
-    name = menss.text
-    User.name = name
+    User.name = menss.text
     User.chat_id = menss.chat.id
     passw = blive.reply_to(menss, "Please enter your password")
-    User.passw = passw
     blive.register_next_step_handler(passw, process)
 
 
 def process(menss):
-    passw = menss.text
-    User.passw = passw
+    User.passw = menss.text
     blive.send_message(menss.chat.id, "Just a moment...")
     live = ItsAGramLive(username=User.name, password=User.passw)
     live.start()
@@ -373,22 +370,22 @@ class ItsAGramLive:
 
                             elif menss.text == 'pin':
                                 # elif cmd[:3] == 'pin':
-                                to_send = menss.text[4:]
-                                if to_send:
-                                    self.pin_comment(to_send)
-                                else:
-                                    blive.send_message(User.chat_id, 'usage: chat <text to chat>')
+                                to_send = blive.send_message(menss.chat.id, "write the comment you want to pin",
+                                                             reply_markup=k2)
+                                blive.register_next_step_handler(to_send, self.pin_comment)
+                                break
 
                             elif menss.text == 'unpin':
                                 # elif cmd[:5] == 'unpin':
                                 self.unpin_comment()
-
+                                break
                             elif menss.text == 'chat':
                                 # elif cmd[:4] == 'chat':
                                 to_send = blive.send_message(menss.chat.id, "write the comment you want to send",
                                                              reply_markup=k2)
                                 blive.register_next_step_handler(to_send, self.send_comment)
                                 break
+
 
                             elif menss.text == 'wave':
                                 users, ids = self.get_viewer_list()
@@ -618,13 +615,14 @@ class ItsAGramLive:
         return False
 
     def stop(self):
-        save = blive.send_message(User.chat_id, 'Save Live replay to IGTV ? <y/n>', reply_markup=k2)
+        #save = blive.send_message(User.chat_id, 'Save Live replay to IGTV ? <y/n>', reply_markup=k2)
+        #blive.register_next_step_handler(save, dsave)
 
-        if save == 'y':
-            blive.register_next_step_handler(save, dsave)
-            title = blive.send_message(User.chat_id, "Title: ")
-            description = blive.send_message(User.chat_id, "Description: ")
-            self.add_post_live_to_igtv(description, title)
+        #if save.text == 'y':
+        #    blive.register_next_step_handler(save, dsave)
+            #title = blive.send_message(User.chat_id, "Title: ")
+            #description = blive.send_message(User.chat_id, "Description: ")
+            #self.add_post_live_to_igtv(description, title)
 
         blive.send_message(User.chat_id, 'Exiting...')
         self.end_broadcast()
@@ -639,17 +637,18 @@ class ItsAGramLive:
             else:
                 blive.send_message(User.chat_id, "There is no comments.")
 
-    def pin_comment(self, to_send):
-        if self.send_comment(msg=to_send):
+    def pin_comment(self, menss):
+        if self.send_comment(menss=menss):
             if self.send_request("live/{}/get_comment/".format(self.broadcast_id)):
                 for comment in [comment for comment in self.LastJson['comments']]:
-                    if comment.get("text") == to_send:
+                    if comment.get("text") == menss.text:
                         self.pinned_comment_id = comment.get("pk")
                 data = json.dumps(
                     {
                         "_csrftoken": self.token,
                         "_uid": self.username_id,
                         "_uuid": self.uuid,
+                        'offset_to_video_start': 1,
                         "comment_id": self.pinned_comment_id
                     })
                 if self.send_request(endpoint='live/{}/pin_comment/'.format(self.broadcast_id),
@@ -685,28 +684,36 @@ def tf(menss):
         'device_id': User.deviceid,
         'guid': ItsAGramLive.uuid,
     }
-    if ItsAGramLive.send_request('accounts/two_factor_login/', ItsAGramLive.generate_signature(json.dumps(data)), login=True):
+    if ItsAGramLive().send_request('accounts/two_factor_login/', ItsAGramLive().generate_signature(data=json.dumps(data)), login=True):
         return True
     else:
         return False
 
 
 
-#def dsave(menss):
-#    titlex = blive.send_message(menss.chat_id, "Title: ")
-#    blive.register_next_step_handler(titlex, dsave)
-#
-#
-#def title(menss):
-#    titley = menss.text
-#    User.titl = titley
-#    description = blive.send_message(User.chat_id, "Description: ")
-#    blive.register_next_step_handler(description, descri)
-#
-#
-#def descri(menss):
-#    description = menss.text
-#    User.descript = description
-#
+def dsave(menss):
+    if menss.text == 'y':
+        titlex = blive.send_message(User.chat_id, "Write your title: ")
+        blive.register_next_step_handler(titlex, titlew)
+    elif menss.text == 'n':
+        blive.send_message(User.chat_id, 'Exiting...')
+        ItsAGramLive().end_broadcast()
+        ItsAGramLive.is_running = False
+        blive.send_message(User.chat_id, 'Bye bye')
 
-blive.polling()
+
+def titlew(menss):
+    User.titl = menss.text
+    description = blive.send_message(User.chat_id, "Write your description: ")
+    blive.register_next_step_handler(description, descri)
+
+
+def descri(menss):
+    User.descript = menss.text
+    blive.send_message(User.chat_id, 'Saving...')
+    salva = ItsAGramLive(username=User.name, password=User.passw)
+    salva.add_post_live_to_igtv(description=User.descript, title=User.titl)
+
+
+
+blive.infinity_polling()
