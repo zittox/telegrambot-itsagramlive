@@ -5,7 +5,7 @@
 ### The ideia is to create a bot version so that you can go live in your instagram ( OBSStudio / Wirecast / VMix alike ) WITHOUT the need of a python installation.
 
 #
-#### bot.py is a copy of ItsAGramLive.py and has been modified with pyTelegramBotAPI
+#### bot.py is a copy of ItsAGramLive.py and has been modified with [pyTelegramBotAPI](https://github.com/eternnoir/pyTelegramBotAPI)
 #
 ___**WORKS:**
 - login (if the account has NO two-factor authentication) 
@@ -63,7 +63,7 @@ token = 'blablbalablabalabalbaalabalbbla'
 -------------------------------------
  ## This project was made possible by the original script from [HarryPython](https://github.com/harrypython/itsagramlive)
 
-#
+
 ## Disclaimer
 
 Neither this bot or its creator are associated or affiliated to Instagram. This is an unofficial implementation and stands no liability or warranty of usage. Use at your own risk.
