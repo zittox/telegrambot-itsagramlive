@@ -21,7 +21,7 @@ ___**WORKS:**
 - wave
 - stop
 - save to IGTV (sometimes it works, sometimes it doesn't - not sure why)
-
+ 
 ___**TO DO:**
 - two-factor authentication
 - chalenge mode ( SMS / Email )
