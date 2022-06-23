@@ -43,7 +43,7 @@ token = 'blablbalablabalabalbaalabalbbla'
 -------------------------------------
 
 ### at the moment the bot is
-- OFFLINE
+- ONLINE  https://t.me/ItsaGramLiveBot
   
 
 
