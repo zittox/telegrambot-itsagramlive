@@ -26,6 +26,7 @@ token = os.getenv('token')
 
 blive = telebot.TeleBot(token)
 
+
 b1 = KeyboardButton('info')
 b2 = KeyboardButton('viewers')
 b3 = KeyboardButton('mute comments')
@@ -74,10 +75,10 @@ def name1(menss):
 
 @blive.message_handler(commands=['botinfo'])
 def devinfo(menss):
-    blive.send_message(menss.chat.id, '''\n\n\nItsaGramLiveBot v0.9\n\n
+    blive.send_message(menss.chat.id, '''\n\n\nItsaGramLiveBot v0.9.1\n\n
     This bot is made by github.com/zittox/ \n\n
     If you have any questions or suggestions, pls post an issue on github\n\n
-    Did you enjoy this bot? Please consider donating to the project http://tiny.cc/ItsaGramLiveBot
+    Did you enjoy this bot? Please consider donating to the project http://tiny.cc/ItsaGramLiveBot\n\n
                     /goBot to start the bot.\n
                     /start to go back to first menu\n
                                        ''', disable_web_page_preview=True)
@@ -296,8 +297,13 @@ class ItsAGramLive:
             error_message = " - "
             if "message" in self.LastJson:
                 error_message = self.LastJson['message']
-            blive.send_message(User.chat_id, '* ERROR({}): {}'.format(self.LastResponse.status_code, error_message))
-            # blive.send_message(User.chat_id, str(self.LastResponse))
+            blive.send_message(User.chat_id, '* ERROR {}: {}'.format(self.LastResponse.status_code, error_message))
+            blive.send_message(User.chat_id, '''
+                    Sorry for the incovenience, please start again\n\n
+                    /start\n
+                    /botinfo\n
+                    /goBot
+                    ''')
             return False
 
     def set_proxy(self, proxy=None):
@@ -319,8 +325,9 @@ class ItsAGramLive:
     def start(self):
         blive.send_message(User.chat_id, "Let's do it!")
         if not self.login():
-            blive.send_message(User.chat_id, "Error {}".format(self.LastResponse.status_code))
-            # blive.send_message(User.chat_id, json.loads(self.LastResponse.text).get("message"))
+            #blive.send_message(User.chat_id, '* ERROR{}: '.format(self.LastResponse.status_code))
+            #blive.send_message(User.chat_id, json.loads(self.LastResponse.text).get("message"))
+            pass
         else:
             blive.send_message(User.chat_id, "You'r logged in")
 
@@ -607,7 +614,7 @@ class ItsAGramLive:
 
             if self.send_request(endpoint='media/configure_to_igtv/', post=self.generate_signature(data), headers=h):
                 blive.send_message(User.chat_id,
-                                   "Live Posted to Story!\n\nCongratulations...That's a wrap!\n\nYou can start another one with /goBot")
+                                   "Live Posted to Story!\n\nCongratulations...That's a wrap!\n\nYou can start another one with /goBot\n\n Or go back to main menu with /start")
                 return True
         return False
 
@@ -684,7 +691,8 @@ class ItsAGramLive:
             blive.send_message(User.chat_id, 'Exiting...')
             self.end_broadcast()
             self.is_running = False
-            blive.send_message(User.chat_id, 'Bye bye')
+            blive.send_message(User.chat_id,
+                               "Live Posted to Story!\n\nCongratulations...That's a wrap!\n\nYou can start another one with /goBot\n\n Or go back to main menu with /start")
 
     def titlew(self, menss):
         User.titl = menss.text
@@ -709,5 +717,9 @@ class ItsAGramLive:
         self.set_code_challenge_required(path, code)
 
 
-blive.infinity_polling()
+if __name__ == '__main__':
+    try:
+        blive.infinity_polling()
+    except Exception:
+        time.sleep(15)
 

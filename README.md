@@ -20,7 +20,7 @@ ___**WORKS:**
 - unpin
 - wave
 - stop
-- save to IGTV
+- save to IGTV (sometimes it works, sometimes it doesn't - not sure why)
 
 ___**TO DO:**
 - two-factor authentication
