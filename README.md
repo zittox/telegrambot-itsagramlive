@@ -18,13 +18,14 @@ ___**WORKS:**
 - chat
 - pin
 - unpin
-- stop 
+- wave
+- stop
+- save to IGTV
 
 ___**TO DO:**
 - two-factor authentication
 - chalenge mode ( SMS / Email )
-- wave
-- save to IGTV
+
 -------------------------------------
 
 ### Token setup
@@ -64,6 +65,10 @@ token = 'blablbalablabalabalbaalabalbbla'
  ## This project was made possible by the original script from [HarryPython](https://github.com/harrypython/itsagramlive)
 
 #
+## Did you enjoy this bot? Please consider donating to the project in this link [paypal](https://www.paypal.com/donate/?business=8GTDHP8TTEMUJ&no_recurring=0&item_name=Thank+you%21+This+means+a+lot+to+me+and+to+this+project.&currency_code=BRL) 
+
+
+
 ## Disclaimer
 
 Neither this bot or its creator are associated or affiliated to Instagram. This is an unofficial application and stands no liability or warranty of usage. Use at your own risk.
