@@ -10,7 +10,6 @@ import tempfile
 import pyperclip
 import requests
 import telebot
-from urllib import parse
 from telebot import types
 from telebot.types import KeyboardButton, ReplyKeyboardMarkup
 # Turn off InsecureRequestWarning
@@ -75,10 +74,10 @@ def name1(menss):
 
 @blive.message_handler(commands=['botinfo'])
 def devinfo(menss):
-    blive.send_message(menss.chat.id, '''\n\n\nItsaGramLiveBot v0.9.1\n\n
+    blive.send_message(menss.chat.id, '''\n\n\nItsaGramLiveBot v0.9.2\n\n
     This bot is made by github.com/zittox/ \n\n
     If you have any questions or suggestions, pls post an issue on github\n\n
-    Did you enjoy this bot? Please consider donating to the project http://tiny.cc/ItsaGramLiveBot\n\n
+    Did you enjoy this bot? Please consider donating to help me keep this bot online http://tiny.cc/ItsaGramLiveBot\n\n
                     /goBot to start the bot.\n
                     /start to go back to first menu\n
                                        ''', disable_web_page_preview=True)
@@ -667,10 +666,9 @@ class ItsAGramLive:
     # replybot
 
     def tf(self, menss):
-        menssx = int(menss.text)
         data = {
             'verification_method': 0,
-            'verification_code': menssx,
+            'verification_code': menss.text,
             'trust_this_device': 0,
             'two_factor_identifier': self.LastJson['two_factor_info']['two_factor_identifier'],
             '_csrftoken': self.LastResponse.cookies['csrftoken'],
@@ -678,7 +676,7 @@ class ItsAGramLive:
             'device_id': self.device_id,
             'guid': self.uuid,
         }
-        if self.send_request('accounts/two_factor_login/', self.generate_signature(data=json.dumps(data)), login=True):
+        if self.send_request('accounts/two_factor_login/', self.generate_signature(json.dumps(data)), login=True):
             return True
         else:
             return False
