@@ -74,7 +74,7 @@ def name1(menss):
 
 @blive.message_handler(commands=['botinfo'])
 def devinfo(menss):
-    blive.send_message(menss.chat.id, '''\n\n\nItsaGramLiveBot v0.9.2\n\n
+    blive.send_message(menss.chat.id, '''\n\n\nItsaGramLiveBot v0.9.3\n\n
     This bot is made by github.com/zittox/ \n\n
     If you have any questions or suggestions, pls post an issue on github\n\n
     Did you enjoy this bot? Please consider donating to help me keep this bot online http://tiny.cc/ItsaGramLiveBot\n\n
@@ -690,7 +690,7 @@ class ItsAGramLive:
             self.end_broadcast()
             self.is_running = False
             blive.send_message(User.chat_id,
-                               "Live Posted to Story!\n\nCongratulations...That's a wrap!\n\nYou can start another one with /goBot\n\n Or go back to main menu with /start")
+                               "Live was NOT posted to IGTV\n\nCongratulations...That's a wrap!\n\nYou can start another one with /goBot\n\n Or go back to main menu with /start")
 
     def titlew(self, menss):
         User.titl = menss.text
@@ -700,7 +700,7 @@ class ItsAGramLive:
     def descri(self, menss):
         User.descript = menss.text
         blive.send_message(User.chat_id, 'Saving...')
-        self.add_post_live_to_igtv(description=User.descript, title=User.titl)
+        self.add_post_live_to_igtv(User.descr, User.titl)
 
     def challenge(self, menss):
         path = self.LastJson['challenge']['api_path'][1:]
