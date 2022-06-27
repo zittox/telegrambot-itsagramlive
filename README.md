@@ -52,7 +52,7 @@ token = 'blablbalablabalabalbaalabalbbla'
 
 Telegram desktop version in windows can copy the stream key automatically to clipborad. Yout can use it in a custom browser docks inside OBS, but ir will not copy the stream key automatically
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://user-images.githubusercontent.com/67715164/173175592-3f9ba36e-4f1b-4c8c-8cfc-bdd7461adcf6.png" width="240" height="426">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://user-images.githubusercontent.com/67715164/175843475-46f61b11-b5e5-46c1-aada-1b5668662794.png" width="640" height="360"> 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://user-images.githubusercontent.com/67715164/173175592-3f9ba36e-4f1b-4c8c-8cfc-bdd7461adcf6.png" width="240" height="426">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://user-images.githubusercontent.com/67715164/175843475-46f61b11-b5e5-46c1-aada-1b5668662794.png" width="640" height="360"> 
 
 
 ##
