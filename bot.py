@@ -61,9 +61,7 @@ def send_welcome(menss):
     Prepare your streaming software before you strat the bot.\n\n
 ~~~~~~******* Disclaimer *******~~~~~~\n
     Neither this bot or its creator are associated or affiliated to Instagram. This is an unofficial implementation and stands no liability or warranty of usage. Use at your own risk.\n\n\n
-                    /start to come back to this menu\n
-                    /botinfo to get info about the bot\n
-                    /goBot to start the bot.\n\n''')
+↓↓↓↓↓ choose an option in menu\n\n''')
 
 
 @blive.message_handler(commands=['goBot'])
@@ -74,12 +72,11 @@ def name1(menss):
 
 @blive.message_handler(commands=['botinfo'])
 def devinfo(menss):
-    blive.send_message(menss.chat.id, '''\n\n\nItsaGramLiveBot v0.9.3\n\n
+    blive.send_message(menss.chat.id, '''\n\n\nItsaGramLiveBot v0.9.4\n\n
     This bot is made by github.com/zittox/ \n\n
     If you have any questions or suggestions, pls post an issue on github\n\n
     Did you enjoy this bot? Please consider donating to help me keep this bot online http://tiny.cc/ItsaGramLiveBot\n\n
-                    /goBot to start the bot.\n
-                    /start to go back to first menu\n
+↓↓↓↓↓ choose an option in menu
                                        ''', disable_web_page_preview=True)
 
 
