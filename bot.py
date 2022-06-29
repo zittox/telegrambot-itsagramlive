@@ -72,7 +72,7 @@ def name1(menss):
 
 @blive.message_handler(commands=['botinfo'])
 def devinfo(menss):
-    blive.send_message(menss.chat.id, '''\n\n\nItsaGramLiveBot v0.9.4.1\n\n
+    blive.send_message(menss.chat.id, '''\n\n\nItsaGramLiveBot v0.9.5\n\n
     This bot is made by github.com/zittox/ \n\n
     If you have any questions or suggestions, pls post an issue on github\n\n
     Did you enjoy this bot? Please consider donating to help me keep this bot online http://tiny.cc/ItsaGramLiveBot\n\n
@@ -244,10 +244,8 @@ class ItsAGramLive:
         # verification_method': 0 works for sms and TOTP. why? ¯\_ಠ_ಠ_/¯
         blive.send_message(User.chat_id, '''Two-factor authentication is NOT working yet\n
         Sorry for the incovenience, please start again\n\n
-        /start\n
-        /botinfo\n
-        /goBot
-        ''')
+        ↓↓↓↓↓ choose an option in menu
+                        ''')
         # verification_code = blive.send_message(User.chat_id, 'Enter verification code: ', reply_markup=k2)
         # blive.register_next_step_handler(verification_code, self.tf)
 
@@ -293,13 +291,22 @@ class ItsAGramLive:
             error_message = " - "
             if "message" in self.LastJson:
                 error_message = self.LastJson['message']
-            blive.send_message(User.chat_id, '* ERROR {}: {}'.format(self.LastResponse.status_code, error_message))
-            blive.send_message(User.chat_id, '''
-                    Sorry for the incovenience, please start again\n\n
-                    /start\n
-                    /botinfo\n
-                    /goBot
-                    ''')
+                match error_message:
+                    case 'Wave already exists':
+                        blive.send_message(User.chat_id, 'Wave already exists\nyou can wave only once per user',
+                                           reply_markup=k1)
+                    case 'Transcode not finished yet':
+                        blive.send_message(User.chat_id, "Transcode not finished yet....just a moment please",
+                                           reply_markup=k1)
+                    case 'This broadcast is muted for comments':
+                        blive.send_message(User.chat_id, "This broadcast is muted for comments", reply_markup=k1)
+                    case _:
+                        blive.send_message(User.chat_id,
+                                           '* ERROR {}: {}'.format(self.LastResponse.status_code, error_message))
+                        blive.send_message(User.chat_id, '''
+                        Sorry for the incovenience\n
+                        ↓↓↓↓↓ choose an option in menu
+                        ''')
             return False
 
     def set_proxy(self, proxy=None):
@@ -322,7 +329,7 @@ class ItsAGramLive:
         blive.send_message(User.chat_id, "Let's do it!")
         if not self.login():
             #blive.send_message(User.chat_id, '* ERROR{}: '.format(self.LastResponse.status_code))
-            #blive.send_message(User.chat_id, json.loads(self.LastResponse.text).get("message"))
+            blive.send_message(User.chat_id, json.loads(self.LastResponse.text).get("message"))
             pass
         else:
             blive.send_message(User.chat_id, "You'r logged in")
@@ -331,16 +338,19 @@ class ItsAGramLive:
                 # blive.send_message(User.chat_id, "Broadcast ID: {}")
                 blive.send_message(User.chat_id, " Broadcast ID: {}".format(self.broadcast_id))
                 blive.send_message(User.chat_id, " Server URL: {}".format(self.stream_server))
-                blive.send_message(User.chat_id, " Server Key: {}".format(self.stream_key))
+                blive.send_message(User.chat_id, " STREAM KEY:\n\n {}".format(self.stream_key))
 
                 try:
                     pyperclip.copy(self.stream_key)
-                    blive.send_message(User.chat_id, "The stream key was automatically copied to your clipboard")
-                except pyperclip.PyperclipException as headless_error:
-                    blive.send_message(User.chat_id, "Could not find a copy/paste mechanism for your system")
-                    pass
+                    blive.send_message(User.chat_id,
+                                       "The stream key WAS automatically copied to your clipboard\n\nPaste your stream key and start your streaming software")
 
-                blive.send_message(User.chat_id, "Paste the stream key and start your streaming software\n\t")
+                except pyperclip.PyperclipException as headless_error:
+                    blive.send_message(User.chat_id,
+                                       "Could not find a copy/paste mechanism for your system\n\nCopy the stream key from the message above, paste it manually and start your streaming software")
+
+                    pass
+                time.sleep(5)
                 blive.send_message(User.chat_id, "ONLY after that, you can choose the commands below.\n\t",
                                    reply_markup=k1)
 
@@ -400,7 +410,8 @@ class ItsAGramLive:
                                 blive.register_next_step_handler(cmd, self.aceno)
                                 break
                         else:
-                            blive.send_message(User.chat_id, "OOOPS! Something went wrong")
+                            blive.send_message(User.chat_id, "OOOPS! Something went wrong\n"
+                                                             "↓↓↓↓↓ choose an option in menu")
 
     def get_viewer_list(self):
         if self.send_request("live/{}/get_viewer_list/".format(self.broadcast_id)):
@@ -415,13 +426,22 @@ class ItsAGramLive:
     def aceno(self, menss):
         users, ids = self.get_viewer_list()
         user_id = int(menss.text) - 1
-        self.wave(ids[user_id])
+        if user_id + 1 > len(users):
+            blive.send_message(User.chat_id,
+                               "Invalid number\n\nClick on the 'Wave' button again and choose the number of one of the users from the list",
+                               reply_markup=k1)
+        else:
+            self.wave(ids[user_id])
 
     def wave(self, user_id):
+        users, ids = self.get_viewer_list()
+        comb = dict(zip(users, ids))
         data = json.dumps(
             {'_uid': self.username_id, '_uuid': self.uuid, '_csrftoken': self.token, 'viewer_id': user_id})
 
         if self.send_request('live/{}/wave/'.format(self.broadcast_id), post=self.generate_signature(data)):
+            blive.send_message(User.chat_id, f"Waved to {(list(comb.keys())[list(comb.values()).index(user_id)])}",
+                               reply_markup=k1)
             return True
         return False
 
@@ -610,8 +630,12 @@ class ItsAGramLive:
 
             if self.send_request(endpoint='media/configure_to_igtv/', post=self.generate_signature(data), headers=h):
                 blive.send_message(User.chat_id,
-                                   "Live Posted to Story!\n\nCongratulations...That's a wrap!\n\nYou can start another one with /goBot\n\n Or go back to main menu with /start")
+                                   "Live Posted to Story!\n\nCongratulations...That's a wrap!\n\n↓↓↓↓↓ choose an option in menu")
                 return True
+            elif 'message' in self.LastJson and self.LastResponse.status_code == 202 and self.LastJson['message'] == "Transcode not finished yet.":
+
+                time.sleep(60)
+                return False
         return False
 
     def stop(self):
@@ -687,7 +711,7 @@ class ItsAGramLive:
             self.end_broadcast()
             self.is_running = False
             blive.send_message(User.chat_id,
-                               "Live was NOT posted to IGTV\n\nCongratulations...That's a wrap!\n\nYou can start another one with /goBot\n\n Or go back to main menu with /start")
+                               "Live was NOT posted to IGTV\n\nCongratulations...That's a wrap!\n\n↓↓↓↓↓ choose an option in menu")
         else:
             blive.send_message(User.chat_id, 'Please answer with y or n')
             self.dsave(menss)
