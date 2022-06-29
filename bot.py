@@ -64,7 +64,7 @@ def send_welcome(menss):
 ↓↓↓↓↓ choose an option in menu\n\n''')
 
 
-@blive.message_handler(commands=['goBot'])
+@blive.message_handler(commands=['gobot'])
 def name1(menss):
     name = blive.reply_to(menss, "Please enter your username")
     blive.register_next_step_handler(name, passwx)
@@ -72,7 +72,7 @@ def name1(menss):
 
 @blive.message_handler(commands=['botinfo'])
 def devinfo(menss):
-    blive.send_message(menss.chat.id, '''\n\n\nItsaGramLiveBot v0.9.4\n\n
+    blive.send_message(menss.chat.id, '''\n\n\nItsaGramLiveBot v0.9.4.1\n\n
     This bot is made by github.com/zittox/ \n\n
     If you have any questions or suggestions, pls post an issue on github\n\n
     Did you enjoy this bot? Please consider donating to help me keep this bot online http://tiny.cc/ItsaGramLiveBot\n\n
@@ -688,6 +688,9 @@ class ItsAGramLive:
             self.is_running = False
             blive.send_message(User.chat_id,
                                "Live was NOT posted to IGTV\n\nCongratulations...That's a wrap!\n\nYou can start another one with /goBot\n\n Or go back to main menu with /start")
+        else:
+            blive.send_message(User.chat_id, 'Please answer with y or n')
+            self.dsave(menss)
 
     def titlew(self, menss):
         User.titl = menss.text
