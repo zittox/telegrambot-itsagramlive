@@ -10,6 +10,18 @@
 #
 #### bot.py is a copy of ItsAGramLive.py and has been modified with pyTelegramBotAPI
 #
+### The live is no longer saved to IGTV, now it's archived in live archive
+You can view, share and download your completed broadcast within the Live Archive. To access the Live Archive:
+
+    1 - While on your profile tap the menu (3 horizontal lines) button in the top right corner.
+
+    2 - Within this menu, tap the Archive button. 
+
+    3 - Tap the dropdown at the top of the screen and switch from “Stories Archive” to “Live Archive.” 
+
+    4 - You will then see your past completed live videos and be able to share to Instagram or download to your device. 
+
+#
 ___**WORKS:**
 - login (if the account has NO two-factor authentication) 
 - go live, rtmp server link and stream key
@@ -22,8 +34,8 @@ ___**WORKS:**
 - pin
 - unpin
 - wave
-- stop
-- save to IGTV (sometimes it works, sometimes it doesn't - not sure why)
+- stop (and archived)
+
  
 ___**TO DO:**
 - two-factor authentication

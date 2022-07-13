@@ -56,9 +56,23 @@ class User:
 @blive.message_handler(commands=['start', 'help'])
 def send_welcome(menss):
     blive.reply_to(menss, '''ItsaGramLiveBot creates a rtmp server and stream key so you can go live on instagram using sofwares like OBSStudio, Wirecast and VMix.\n\n
-                     This is a work in progress:\n 
+                     This is a work in progress:\n\n 
     --- Accounts with two-factor authentication WILL NOT WORK YET\n\n
+    --- The live is no longer saved to IGTV, it's archived in the live archive. Have a look in github to see where to find it inside instagram\n\n\n
+    
     Prepare your streaming software before you strat the bot.\n\n
+    
+    Commands once logged in:\n
+    - Info
+    - viewers
+    - comments
+    - mute comments
+    - unmute comments
+    - chat
+    - pin
+    - unpin
+    - wave
+    - stop (and archived)\n\n
 ~~~~~~******* Disclaimer *******~~~~~~\n
     Neither this bot or its creator are associated or affiliated to Instagram. This is an unofficial implementation and stands no liability or warranty of usage. Use at your own risk.\n\n\n
 ↓↓↓↓↓ choose an option in menu\n\n''')
@@ -72,7 +86,7 @@ def name1(menss):
 
 @blive.message_handler(commands=['botinfo'])
 def devinfo(menss):
-    blive.send_message(menss.chat.id, '''\n\n\nItsaGramLiveBot v0.9.5\n\n
+    blive.send_message(menss.chat.id, '''\n\n\nItsaGramLiveBot v0.9.6\n\n
     This bot is made by github.com/zittox/ \n\n
     If you have any questions or suggestions, pls post an issue on github\n\n
     Did you enjoy this bot? Please consider donating to help me keep this bot online http://tiny.cc/ItsaGramLiveBot\n\n
@@ -295,9 +309,9 @@ class ItsAGramLive:
                     case 'Wave already exists':
                         blive.send_message(User.chat_id, 'Wave already exists\nyou can wave only once per user',
                                            reply_markup=k1)
-                    case 'Transcode not finished yet':
-                        blive.send_message(User.chat_id, "Transcode not finished yet....just a moment please",
-                                           reply_markup=k1)
+                    #case 'Transcode not finished yet.':
+                    #    blive.send_message(User.chat_id, "Transcode not finished yet....just a moment please",
+                    #                       reply_markup=k1)
                     case 'This broadcast is muted for comments':
                         blive.send_message(User.chat_id, "This broadcast is muted for comments", reply_markup=k1)
                     case _:
@@ -328,9 +342,9 @@ class ItsAGramLive:
     def start(self):
         blive.send_message(User.chat_id, "Let's do it!")
         if not self.login():
-            #blive.send_message(User.chat_id, '* ERROR{}: '.format(self.LastResponse.status_code))
-            blive.send_message(User.chat_id, json.loads(self.LastResponse.text).get("message"))
-            pass
+            blive.send_message(User.chat_id, '* ERROR{}: '.format(self.LastResponse.status_code))
+            #blive.send_message(User.chat_id, json.loads(self.LastResponse.text).get("message"))
+
         else:
             blive.send_message(User.chat_id, "You'r logged in")
 
@@ -639,8 +653,13 @@ class ItsAGramLive:
         return False
 
     def stop(self):
-        save = blive.send_message(User.chat_id, 'Save Live replay to IGTV ? <y/n>', reply_markup=k2)
-        blive.register_next_step_handler(save, self.dsave)
+        #save = blive.send_message(User.chat_id, 'Save Live replay to IGTV ? <y/n>', reply_markup=k2)
+        #blive.register_next_step_handler(save, self.dsave)
+        blive.send_message(User.chat_id, 'Exiting...')
+        self.end_broadcast()
+        self.is_running = False
+        blive.send_message(User.chat_id,
+                           "Live was Archived! pls have a look at the README in github to find where the archive is\nchoose menu and botinfo to get the github link\n\nCongratulations...That's a wrap!\n\n↓↓↓↓↓ choose an option in menu")
 
     def get_comments(self):
         if self.send_request("live/{}/get_comment/".format(self.broadcast_id)):
@@ -702,19 +721,19 @@ class ItsAGramLive:
         else:
             return False
 
-    def dsave(self, menss):
-        if menss.text == 'y':
-            titlex = blive.send_message(User.chat_id, "Write your title: ")
-            blive.register_next_step_handler(titlex, self.titlew)
-        elif menss.text == 'n':
-            blive.send_message(User.chat_id, 'Exiting...')
-            self.end_broadcast()
-            self.is_running = False
-            blive.send_message(User.chat_id,
-                               "Live was NOT posted to IGTV\n\nCongratulations...That's a wrap!\n\n↓↓↓↓↓ choose an option in menu")
-        else:
-            blive.send_message(User.chat_id, 'Please answer with y or n')
-            self.dsave(menss)
+    ##def dsave(self, menss):
+    ##    if menss.text == 'y':
+    ##        titlex = blive.send_message(User.chat_id, "Write your title: ")
+    ##        blive.register_next_step_handler(titlex, self.titlew)
+    ##    elif menss.text == 'n':
+    ##        blive.send_message(User.chat_id, 'Exiting...')
+    ##        self.end_broadcast()
+    ##        self.is_running = False
+    ##        blive.send_message(User.chat_id,
+    ##                           "Live was NOT posted to IGTV\n\nCongratulations...That's a wrap!\n\n↓↓↓↓↓ choose an option in menu")
+     #   else:
+     #       blive.send_message(User.chat_id, 'Please answer with y or n')
+     #       self.dsave(menss)
 
     def titlew(self, menss):
         User.titl = menss.text
