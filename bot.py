@@ -7,7 +7,6 @@ import time
 import urllib
 import uuid
 import tempfile
-import pyperclip
 import requests
 import telebot
 from telebot import types
@@ -55,12 +54,12 @@ class User:
 
 @blive.message_handler(commands=['start', 'help'])
 def send_welcome(menss):
-    blive.reply_to(menss, '''ItsaGramLiveBot creates a rtmp server and stream key so you can go live on instagram using sofwares like OBSStudio, Wirecast and VMix.\n\n
+    blive.reply_to(menss, '''ItsaGramLiveBot creates a rtmp server and stream key so you can go live on instagram using softwares like OBSStudio, Wirecast and VMix.\n\n
                      This is a work in progress:\n\n 
     --- Accounts with two-factor authentication WILL NOT WORK YET\n\n
-    --- The live is no longer saved to IGTV, it's archived in the live archive. Have a look in github to see where to find it inside instagram\n\n\n
+    --- The live is automatically archived in the live archive and you can edit and share it from there. Have a look in github (link in menu - botinfo) to see where to find it inside instagram\n\n\n
     
-    Prepare your streaming software before you strat the bot.\n\n
+    Prepare your streaming software before you start the bot.\n\n
     
     Commands once logged in:\n
     - Info
@@ -86,7 +85,7 @@ def name1(menss):
 
 @blive.message_handler(commands=['botinfo'])
 def devinfo(menss):
-    blive.send_message(menss.chat.id, '''\n\n\nItsaGramLiveBot v0.9.6\n\n
+    blive.send_message(menss.chat.id, '''\n\n\nItsaGramLiveBot v0.9.7\n\n
     This bot is made by github.com/zittox/ \n\n
     If you have any questions or suggestions, pls post an issue on github\n\n
     Did you enjoy this bot? Please consider donating to help me keep this bot online http://tiny.cc/ItsaGramLiveBot\n\n
@@ -257,7 +256,7 @@ class ItsAGramLive:
     def two_factor(self):
         # verification_method': 0 works for sms and TOTP. why? ¯\_ಠ_ಠ_/¯
         blive.send_message(User.chat_id, '''Two-factor authentication is NOT working yet\n
-        Sorry for the incovenience, please start again\n\n
+        Sorry for the inconvenience, please start again\n\n
         ↓↓↓↓↓ choose an option in menu
                         ''')
         # verification_code = blive.send_message(User.chat_id, 'Enter verification code: ', reply_markup=k2)
@@ -318,8 +317,8 @@ class ItsAGramLive:
                         blive.send_message(User.chat_id,
                                            '* ERROR {}: {}'.format(self.LastResponse.status_code, error_message))
                         blive.send_message(User.chat_id, '''
-                        Sorry for the incovenience\n
-                        ↓↓↓↓↓ choose an option in menu
+                    Sorry for the inconvenience\n
+                    ↓↓↓↓↓ choose an option in menu
                         ''')
             return False
 
@@ -342,7 +341,8 @@ class ItsAGramLive:
     def start(self):
         blive.send_message(User.chat_id, "Let's do it!")
         if not self.login():
-            blive.send_message(User.chat_id, '* ERROR{}: '.format(self.LastResponse.status_code))
+            blive.send_message(User.chat_id, 'Login failed!')
+            #blive.send_message(User.chat_id, '* ERROR{}: '.format(self.LastResponse.status_code))
             #blive.send_message(User.chat_id, json.loads(self.LastResponse.text).get("message"))
 
         else:
@@ -351,81 +351,16 @@ class ItsAGramLive:
             if self.create_broadcast():
                 # blive.send_message(User.chat_id, "Broadcast ID: {}")
                 blive.send_message(User.chat_id, " Broadcast ID: {}".format(self.broadcast_id))
-                blive.send_message(User.chat_id, " Server URL: {}".format(self.stream_server))
-                blive.send_message(User.chat_id, " STREAM KEY:\n\n {}".format(self.stream_key))
+                blive.send_message(User.chat_id, " Server URL:  {}".format(self.stream_server))
+                blive.send_message(User.chat_id,
+                                   f" Stream Key:\n\n `{self.stream_key}`\n\n Click ON the stream key above to copy, paste it IN your streaming software and start it.",
+                                   parse_mode="Markdown")
 
-                try:
-                    pyperclip.copy(self.stream_key)
-                    blive.send_message(User.chat_id,
-                                       "The stream key WAS automatically copied to your clipboard\n\nPaste your stream key and start your streaming software")
+                vai = blive.send_message(User.chat_id,
+                                         "AFTER you started your streaming software, type any character to start the live stream\n\t",
+                                         reply_markup=k2)
+                blive.register_next_step_handler(vai, self.foi)
 
-                except pyperclip.PyperclipException as headless_error:
-                    blive.send_message(User.chat_id,
-                                       "Could not find a copy/paste mechanism for your system\n\nCopy the stream key from the message above, paste it manually and start your streaming software")
-
-                    pass
-                time.sleep(5)
-                blive.send_message(User.chat_id, "ONLY after that, you can choose the commands below.\n\t",
-                                   reply_markup=k1)
-
-                if self.start_broadcast():
-                    self.is_running = True
-
-                    @blive.message_handler()
-                    def command(menss):
-                        while self.is_running:
-
-                            if menss.text == "stop":
-                                self.stop()
-                                break
-
-                            elif menss.text == "mute comments":
-                                self.mute_comments()
-                                break
-
-                            elif menss.text == "unmute comments":
-                                self.unmute_comment()
-                                break
-
-                            elif menss.text == 'info':
-                                self.live_info()
-                                break
-
-                            elif menss.text == 'viewers':
-                                users, ids = self.get_viewer_list()
-                                blive.send_message(User.chat_id, str(users))
-                                break
-
-                            elif menss.text == 'comments':
-                                self.get_comments()
-                                break
-
-                            elif menss.text == 'pin':
-                                to_send = blive.send_message(menss.chat.id, "write the comment you want to pin",
-                                                             reply_markup=k2)
-                                blive.register_next_step_handler(to_send, self.pin_comment)
-                                break
-
-                            elif menss.text == 'unpin':
-                                self.unpin_comment()
-                                break
-                            elif menss.text == 'chat':
-                                to_send = blive.send_message(menss.chat.id, "write the comment you want to send",
-                                                             reply_markup=k2)
-                                blive.register_next_step_handler(to_send, self.send_comment)
-                                break
-
-
-                            elif menss.text == 'wave':
-                                users, ids = self.get_viewer_list()
-                                for i in range(len(users)):
-                                    blive.send_message(User.chat_id, f'{i + 1}. {users[i]}')
-                                cmd = blive.send_message(User.chat_id, 'Type number according to user e.g 1')
-                                blive.register_next_step_handler(cmd, self.aceno)
-                                break
-                        else:
-                            blive.send_message(User.chat_id, "OOOPS! Something went wrong\n"
-                                                             "↓↓↓↓↓ choose an option in menu")
 
     def get_viewer_list(self):
         if self.send_request("live/{}/get_viewer_list/".format(self.broadcast_id)):
@@ -542,115 +477,115 @@ class ItsAGramLive:
             return True
         return False
 
-    def get_post_live_thumbnails(self):
-        if self.send_request(endpoint="live/{}/get_post_live_thumbnails/".format(self.broadcast_id)):
-            return self.LastJson.get("thumbnails")[int(len(self.LastJson.get("thumbnails")) / 2)]
-
-    def upload_live_thumbnails(self):
-        im1 = Image.open(requests.get(self.get_post_live_thumbnails(), stream=True).raw)
-        size = 1080, 1920
-        im1 = im1.resize(size, Image.ANTIALIAS)
-        upload_id = str(int(time.time() * 1000))
-        link = os.path.join(tempfile.gettempdir(), "{}.jpg".format(upload_id))
-        im1.save(link, "JPEG", quality=100)
-
-        upload_idforurl = "{}_0_{}".format(upload_id, str(hash(os.path.basename(link))))
-
-        rupload_params = {
-            "retry_context": '{"num_step_auto_retry":0,"num_reupload":0,"num_step_manual_retry":0}',
-            "media_type": "1",
-            "broadcast_id": self.broadcast_id,
-            "is_post_live_igtv": "1",
-            "xsharing_user_ids": "[]",
-            "upload_id": upload_id,
-            "image_compression": json.dumps(
-                {"lib_name": "moz", "lib_version": "3.1.m", "quality": "80"}
-            ),
-        }
-
-        h = {
-            "Accept-Encoding": "gzip",
-            "X-Instagram-Rupload-Params": json.dumps(rupload_params),
-            "X-Entity-Type": "image/jpeg",
-            "Offset": "0",
-            "X-Entity-Name": upload_idforurl,
-            "X-Entity-Length": str(os.path.getsize(link)),
-            "Content-Type": "application/octet-stream",
-            "Content-Length": str(os.path.getsize(link)),
-            "Accept-Encoding": "gzip",
-        }
-
-        data = open(link, 'rb').read()
-
-        if self.send_request(endpoint="../../rupload_igphoto/{}".format(upload_idforurl), post=data, headers=h):
-            if self.LastJson.get('status') == 'ok':
-                return self.LastJson.get('upload_id')
-
-    def add_post_live_to_igtv(self, description, title):
-        self.end_broadcast()
-        h = {
-            'Priority': 'u=3',
-            'User-Agent': self.USER_AGENT,
-            'Accept-Language': 'en-US',
-            'IG-U-DS-USER-ID': str(self.username_id),
-            'IG-INTENDED-USER-ID': str(self.username_id),
-            'Accept-Encoding': 'gzip, deflate',
-            'Host': 'i.instagram.com',
-            'X-FB-HTTP-Engine': 'Liger',
-            'X-FB-Client-IP': 'True',
-            'X-FB-Server-Cluster': 'True',
-            'Connection': 'close',
-
-        }
-        if self.send_request(endpoint='igtv/igtv_creation_tools', headers=h):
-            data = json.dumps({
-                "igtv_ads_toggled_on": "0",
-                # "timezone_offset": "-28800",
-                "_csrftoken": str(self.token),
-                "source_type": "4",
-                "_uid": str(self.username_id),
-                "device_id": self.device_id,
-                "keep_shoppable_products": "0",
-                "_uuid": self.uuid,
-                "title": title,
-                "caption": description,
-                "igtv_share_preview_to_feed": "1",
-                "upload_id": self.upload_live_thumbnails(),
-                "igtv_composer_session_id": self.generate_UUID(True),
-                "device": {
-                    "manufacturer": self.DEVICE_SETS["manufacturer"],
-                    "model": self.DEVICE_SETS["model"],
-                    "android_version": self.DEVICE_SETS["android_version"],
-                    "android_release": self.DEVICE_SETS["android_release"]},
-                "extra": {"source_width": 504, "source_height": 896}
-            })
-
-            h = {
-                'X-IG-Device-ID': self.device_id,
-                'is_igtv_video': '1',
-                'retry_context': '{"num_reupload":0,"num_step_auto_retry":0,"num_step_manual_retry":0}',
-                'Priority': 'u=3',
-                'User-Agent': self.USER_AGENT,
-                'IG-U-DS-USER-ID': str(self.username_id),
-                'IG-INTENDED-USER-ID': str(self.username_id),
-                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                'Accept-Encoding': 'gzip, deflate',
-                'Host': 'i.instagram.com',
-                'X-FB-HTTP-Engine': 'Liger',
-                'X-FB-Client-IP': 'True',
-                'X-FB-Server-Cluster': 'True',
-                'Connection': 'close',
-            }
-
-            if self.send_request(endpoint='media/configure_to_igtv/', post=self.generate_signature(data), headers=h):
-                blive.send_message(User.chat_id,
-                                   "Live Posted to Story!\n\nCongratulations...That's a wrap!\n\n↓↓↓↓↓ choose an option in menu")
-                return True
-            elif 'message' in self.LastJson and self.LastResponse.status_code == 202 and self.LastJson['message'] == "Transcode not finished yet.":
-
-                time.sleep(60)
-                return False
-        return False
+    #def get_post_live_thumbnails(self):
+    #    if self.send_request(endpoint="live/{}/get_post_live_thumbnails/".format(self.broadcast_id)):
+    #        return self.LastJson.get("thumbnails")[int(len(self.LastJson.get("thumbnails")) / 2)]
+    #
+    #def upload_live_thumbnails(self):
+    #    im1 = Image.open(requests.get(self.get_post_live_thumbnails(), stream=True).raw)
+    #    size = 1080, 1920
+    #    im1 = im1.resize(size, Image.ANTIALIAS)
+    #    upload_id = str(int(time.time() * 1000))
+    #    link = os.path.join(tempfile.gettempdir(), "{}.jpg".format(upload_id))
+    #    im1.save(link, "JPEG", quality=100)
+    #
+    #    upload_idforurl = "{}_0_{}".format(upload_id, str(hash(os.path.basename(link))))
+    #
+    #    rupload_params = {
+    #        "retry_context": '{"num_step_auto_retry":0,"num_reupload":0,"num_step_manual_retry":0}',
+    #        "media_type": "1",
+    #        "broadcast_id": self.broadcast_id,
+    #        "is_post_live_igtv": "1",
+    #        "xsharing_user_ids": "[]",
+    #        "upload_id": upload_id,
+    #        "image_compression": json.dumps(
+    #            {"lib_name": "moz", "lib_version": "3.1.m", "quality": "80"}
+    #        ),
+    #    }
+    #
+    #    h = {
+    #        "Accept-Encoding": "gzip",
+    #        "X-Instagram-Rupload-Params": json.dumps(rupload_params),
+    #        "X-Entity-Type": "image/jpeg",
+    #        "Offset": "0",
+    #        "X-Entity-Name": upload_idforurl,
+    #        "X-Entity-Length": str(os.path.getsize(link)),
+    #        "Content-Type": "application/octet-stream",
+    #        "Content-Length": str(os.path.getsize(link)),
+    #        "Accept-Encoding": "gzip",
+    #    }
+    #
+    #    data = open(link, 'rb').read()
+    #
+    #    if self.send_request(endpoint="../../rupload_igphoto/{}".format(upload_idforurl), post=data, headers=h):
+    #        if self.LastJson.get('status') == 'ok':
+    #            return self.LastJson.get('upload_id')
+    #
+    #def add_post_live_to_igtv(self, description, title):
+    #    self.end_broadcast()
+    #    h = {
+    #        'Priority': 'u=3',
+    #        'User-Agent': self.USER_AGENT,
+    #        'Accept-Language': 'en-US',
+    #        'IG-U-DS-USER-ID': str(self.username_id),
+    #        'IG-INTENDED-USER-ID': str(self.username_id),
+    #        'Accept-Encoding': 'gzip, deflate',
+    #        'Host': 'i.instagram.com',
+    #        'X-FB-HTTP-Engine': 'Liger',
+    #        'X-FB-Client-IP': 'True',
+    #        'X-FB-Server-Cluster': 'True',
+    #        'Connection': 'close',
+    #
+    #    }
+    #    if self.send_request(endpoint='igtv/igtv_creation_tools', headers=h):
+    #        data = json.dumps({
+    #            "igtv_ads_toggled_on": "0",
+    #            # "timezone_offset": "-28800",
+    #            "_csrftoken": str(self.token),
+    #            "source_type": "4",
+    #            "_uid": str(self.username_id),
+    #            "device_id": self.device_id,
+    #            "keep_shoppable_products": "0",
+    #            "_uuid": self.uuid,
+    #            "title": title,
+    #            "caption": description,
+    #            "igtv_share_preview_to_feed": "1",
+    #            "upload_id": self.upload_live_thumbnails(),
+    #            "igtv_composer_session_id": self.generate_UUID(True),
+    #            "device": {
+    #                "manufacturer": self.DEVICE_SETS["manufacturer"],
+    #                "model": self.DEVICE_SETS["model"],
+    #                "android_version": self.DEVICE_SETS["android_version"],
+    #                "android_release": self.DEVICE_SETS["android_release"]},
+    #            "extra": {"source_width": 504, "source_height": 896}
+    #        })
+    #
+    #        h = {
+    #            'X-IG-Device-ID': self.device_id,
+    #            'is_igtv_video': '1',
+    #            'retry_context': '{"num_reupload":0,"num_step_auto_retry":0,"num_step_manual_retry":0}',
+    #            'Priority': 'u=3',
+    #            'User-Agent': self.USER_AGENT,
+    #            'IG-U-DS-USER-ID': str(self.username_id),
+    #            'IG-INTENDED-USER-ID': str(self.username_id),
+    #            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+    #            'Accept-Encoding': 'gzip, deflate',
+    #            'Host': 'i.instagram.com',
+    #            'X-FB-HTTP-Engine': 'Liger',
+    #            'X-FB-Client-IP': 'True',
+    #            'X-FB-Server-Cluster': 'True',
+    #            'Connection': 'close',
+    #        }
+    #
+    #        if self.send_request(endpoint='media/configure_to_igtv/', post=self.generate_signature(data), headers=h):
+    #            blive.send_message(User.chat_id,
+    #                               "Live Posted to Story!\n\nCongratulations...That's a wrap!\n\n↓↓↓↓↓ choose an option in menu")
+    #            return True
+    #        elif 'message' in self.LastJson and self.LastResponse.status_code == 202 and self.LastJson['message'] == "Transcode not finished yet.":
+    #
+    #            time.sleep(60)
+    #            return False
+    #    return False
 
     def stop(self):
         #save = blive.send_message(User.chat_id, 'Save Live replay to IGTV ? <y/n>', reply_markup=k2)
@@ -659,7 +594,7 @@ class ItsAGramLive:
         self.end_broadcast()
         self.is_running = False
         blive.send_message(User.chat_id,
-                           "Live was Archived! pls have a look at the README in github to find where the archive is\nchoose menu and botinfo to get the github link\n\nCongratulations...That's a wrap!\n\n↓↓↓↓↓ choose an option in menu")
+                           "Live was Archived! pls have a look at the README in github to find where the archive is. Choose menu and botinfo to get the github link\n\nCongratulations...That's a wrap!\n\n↓↓↓↓↓ choose an option in menu", reply_markup=k2)
 
     def get_comments(self):
         if self.send_request("live/{}/get_comment/".format(self.broadcast_id)):
@@ -705,21 +640,21 @@ class ItsAGramLive:
 
     # replybot
 
-    def tf(self, menss):
-        data = {
-            'verification_method': 0,
-            'verification_code': menss.text,
-            'trust_this_device': 0,
-            'two_factor_identifier': self.LastJson['two_factor_info']['two_factor_identifier'],
-            '_csrftoken': self.LastResponse.cookies['csrftoken'],
-            'username': self.username,
-            'device_id': self.device_id,
-            'guid': self.uuid,
-        }
-        if self.send_request('accounts/two_factor_login/', self.generate_signature(json.dumps(data)), login=True):
-            return True
-        else:
-            return False
+    #def tf(self, menss):
+    #    data = {
+    #        'verification_method': 0,
+    #        'verification_code': menss.text,
+    #        'trust_this_device': 0,
+    #        'two_factor_identifier': self.LastJson['two_factor_info']['two_factor_identifier'],
+    #        '_csrftoken': self.LastResponse.cookies['csrftoken'],
+    #        'username': self.username,
+    #        'device_id': self.device_id,
+    #        'guid': self.uuid,
+    #    }
+    #    if self.send_request('accounts/two_factor_login/', self.generate_signature(json.dumps(data)), login=True):
+    #        return True
+    #    else:
+    #        return False
 
     ##def dsave(self, menss):
     ##    if menss.text == 'y':
@@ -735,15 +670,15 @@ class ItsAGramLive:
      #       blive.send_message(User.chat_id, 'Please answer with y or n')
      #       self.dsave(menss)
 
-    def titlew(self, menss):
-        User.titl = menss.text
-        description = blive.send_message(User.chat_id, "Write your description: ")
-        blive.register_next_step_handler(description, self.descri)
-
-    def descri(self, menss):
-        User.descript = menss.text
-        blive.send_message(User.chat_id, 'Saving...')
-        self.add_post_live_to_igtv(User.descr, User.titl)
+    #def titlew(self, menss):
+    #    User.titl = menss.text
+    #    description = blive.send_message(User.chat_id, "Write your description: ")
+    #    blive.register_next_step_handler(description, self.descri)
+    #
+    #def descri(self, menss):
+    #    User.descript = menss.text
+    #    blive.send_message(User.chat_id, 'Saving...')
+    #    self.add_post_live_to_igtv(User.descr, User.titl)
 
     def challenge(self, menss):
         path = self.LastJson['challenge']['api_path'][1:]
@@ -756,6 +691,68 @@ class ItsAGramLive:
         path = self.LastJson['challenge']['api_path'][1:]
         code = int(menss.text)
         self.set_code_challenge_required(path, code)
+
+    def foi(self, menss):
+        if self.start_broadcast():
+            self.is_running = True
+            blive.send_message(User.chat_id, "Live stream started.\n\nUse the commands below.\n\t",
+                               reply_markup=k1)
+
+            @blive.message_handler()
+            def command(menss):
+                while self.is_running:
+
+                    if menss.text == "stop":
+                        self.stop()
+                        break
+
+                    elif menss.text == "mute comments":
+                        self.mute_comments()
+                        break
+
+                    elif menss.text == "unmute comments":
+                        self.unmute_comment()
+                        break
+
+                    elif menss.text == 'info':
+                        self.live_info()
+                        break
+
+                    elif menss.text == 'viewers':
+                        users, ids = self.get_viewer_list()
+                        blive.send_message(User.chat_id, str(users))
+                        break
+
+                    elif menss.text == 'comments':
+                        self.get_comments()
+                        break
+
+                    elif menss.text == 'pin':
+                        to_send = blive.send_message(menss.chat.id, "write the comment you want to pin",
+                                                     reply_markup=k2)
+                        blive.register_next_step_handler(to_send, self.pin_comment)
+                        break
+
+                    elif menss.text == 'unpin':
+                        self.unpin_comment()
+                        break
+                    elif menss.text == 'chat':
+                        to_send = blive.send_message(menss.chat.id, "write the comment you want to send",
+                                                     reply_markup=k2)
+                        blive.register_next_step_handler(to_send, self.send_comment)
+                        break
+
+
+                    elif menss.text == 'wave':
+                        users, ids = self.get_viewer_list()
+                        for i in range(len(users)):
+                            blive.send_message(User.chat_id, f'{i + 1}. {users[i]}')
+                        cmd = blive.send_message(User.chat_id, 'Type number according to user e.g 1', reply_markup=k2)
+                        blive.register_next_step_handler(cmd, self.aceno)
+                        break
+                else:
+                    blive.send_message(User.chat_id, "OOOPS! Something went wrong\n"
+                                                     "↓↓↓↓↓ choose an option in menu")
 
 
 if __name__ == '__main__':
