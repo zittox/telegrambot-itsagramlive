@@ -44,7 +44,7 @@ ___**TO DO:**
 -------------------------------------
 
 ## At the moment the bot is:
-- ONLINE -  https://t.me/ItsaGramLiveBot
+- OFFLINE -  https://t.me/ItsaGramLiveBot
   
 
 -------------------------------------
